@@ -1,30 +1,30 @@
 package hu.prgitems;
 
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
+import java.util.Scanner;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class App {
-
-    private static final int SIZE = 100;
-
-    private static final int BOUND = 99;
 
     private static List<Integer> numbers;
 
     public static void main(String[] args) {
 
-        numbers = init() ;
+        numbers = parse(readFromFile("szamok.txt"));
 
         print(numbers);
 
         System.out.println("1. Sorozatszámítás: A számok összege: "
                 + summation());
+        System.out.print("Mi legyen az osztó értéke:");
 
-        int divisor = 2;
+        int divisor = readFromConsole();
 
         boolean hasItem = decision(divisor);
 
@@ -32,10 +32,10 @@ public class App {
                  " a tömben " + divisor + "-al osztható szám!");
 
         if(hasItem) {
-            System.out.println("3. Kiválasztás: A sorozat " + (selection(divisor) + 1) + ". eleme osztható " + divisor + "-vel.");
+            System.out.println("3. Kiválasztás: A sorozat " + selection(divisor) + "értékű eleme osztható " + divisor + "-al.");
         }
 
-        final int anotherDivisor = 3;
+        int anotherDivisor = readFromConsole();
         String value = search(anotherDivisor)
                 .map(i -> " A sorozat " + i + " értékű eleme osztható " + anotherDivisor + "-al.")
         .orElse("Nincs ilyen érték.");
@@ -48,18 +48,44 @@ public class App {
         System.out.println("A rendezettlen lista elemei:");
         print(numbers);
 
-        System.out.println("A rendezett lista elemei:");
-        print(sort());
+        printToFiles("rendezett.txt",convertToList(sort()));
     }
 
+private static int readFromConsole() {
+    Scanner scanner = new Scanner(System.in);
+    return scanner.nextInt();
+}
 
+    private static List<String> readFromFile(String filename) {
+        List <String> lines = new ArrayList<>();
+        try {
+            lines = Files.readAllLines(Path.of(filename));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return lines;
+    }
 
-    private static List<Integer> init() {
-        Random random = new Random();
-        return IntStream.range(0,SIZE)
-                .mapToObj(i -> random.nextInt(BOUND) + 1)
+    private static List<Integer> parse(List<String> lines) {
+        return lines.stream()
+                .map(Integer::parseInt)
                 .collect(Collectors.toList());
     }
+
+    private static List<String> convertToList(List<Integer> list) {
+        return list.stream()
+                .map(String::valueOf)
+                .collect(Collectors.toList());
+    }
+
+    private static void printToFiles(String filename,List<String> lines) {
+        try {
+            Files.write(Path.of(filename), lines);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private static void print(List<Integer> list) {
         list.forEach(i -> System.out.printf("%4d", i));
         System.out.println();
